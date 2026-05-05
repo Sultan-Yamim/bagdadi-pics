@@ -6,7 +6,7 @@ require('dotenv').config();
 // --- Application Insights (advanced service) ---
 // Must be required and started BEFORE other modules so it can hook them.
 const appInsightsConnStr = process.env.APPLICATIONINSIGHTS_CONNECTION_STRING;
-if (appInsightsConnStr) {
+if (appInsightsConnStr && appInsightsConnStr.includes('InstrumentationKey=') && !appInsightsConnStr.includes('...')) {
   const appInsights = require('applicationinsights');
   appInsights
     .setup(appInsightsConnStr)
@@ -24,6 +24,7 @@ if (appInsightsConnStr) {
 const path = require('path');
 const express = require('express');
 const photosRouter = require('./routes/photos');
+const authRouter = require('./routes/auth');
 
 const app = express();
 
@@ -35,6 +36,7 @@ app.get('/health', (_req, res) => {
   res.json({ status: 'ok', service: 'bagdadi-pics', time: new Date().toISOString() });
 });
 
+app.use('/api/auth', authRouter);
 app.use('/api/photos', photosRouter);
 
 // Friendly error handler

@@ -1,9 +1,9 @@
 // REST API for photos: full CRUD.
-//   POST   /api/photos          - upload a photo file + metadata
+//   POST   /api/photos          - upload a photo file + metadata  (auth required)
 //   GET    /api/photos          - list all photos
 //   GET    /api/photos/:id      - read one photo's metadata
-//   PUT    /api/photos/:id      - update title/description/tags
-//   DELETE /api/photos/:id      - delete blob and metadata doc
+//   PUT    /api/photos/:id      - update title/description/tags   (auth required)
+//   DELETE /api/photos/:id      - delete blob and metadata doc    (auth required)
 
 const express = require('express');
 const multer = require('multer');
@@ -11,6 +11,7 @@ const { v4: uuidv4 } = require('uuid');
 
 const blob = require('../services/blobService');
 const cosmos = require('../services/cosmosService');
+const { requireAuth } = require('../middleware/auth');
 
 const router = express.Router();
 
@@ -20,8 +21,8 @@ const upload = multer({
   limits: { fileSize: 15 * 1024 * 1024 },
 });
 
-// CREATE
-router.post('/', upload.single('photo'), async (req, res, next) => {
+// CREATE - login required
+router.post('/', requireAuth, upload.single('photo'), async (req, res, next) => {
   try {
     if (!req.file) return res.status(400).json({ error: 'photo file is required (multipart field "photo")' });
 
@@ -37,10 +38,13 @@ router.post('/', upload.single('photo'), async (req, res, next) => {
       title: req.body.title || req.file.originalname,
       description: req.body.description || '',
       tags,
+      photographer: req.body.photographer || '',
+      dateTaken: req.body.dateTaken || null,
       blobName,
       blobUrl: url,
       contentType: req.file.mimetype,
       sizeBytes: req.file.size,
+      uploadedBy: req.user.email,
       createdAt: new Date().toISOString(),
     };
     const saved = await cosmos.createPhoto(doc);
@@ -50,7 +54,7 @@ router.post('/', upload.single('photo'), async (req, res, next) => {
   }
 });
 
-// LIST
+// LIST - public
 router.get('/', async (_req, res, next) => {
   try {
     const items = await cosmos.listPhotos();
@@ -60,7 +64,7 @@ router.get('/', async (_req, res, next) => {
   }
 });
 
-// READ ONE
+// READ ONE - public
 router.get('/:id', async (req, res, next) => {
   try {
     const doc = await cosmos.getPhoto(req.params.id);
@@ -71,12 +75,14 @@ router.get('/:id', async (req, res, next) => {
   }
 });
 
-// UPDATE (metadata only)
-router.put('/:id', async (req, res, next) => {
+// UPDATE - login required
+router.put('/:id', requireAuth, async (req, res, next) => {
   try {
     const patch = {};
     if (typeof req.body.title === 'string') patch.title = req.body.title;
     if (typeof req.body.description === 'string') patch.description = req.body.description;
+    if (typeof req.body.photographer === 'string') patch.photographer = req.body.photographer;
+    if (typeof req.body.dateTaken === 'string') patch.dateTaken = req.body.dateTaken || null;
     if (req.body.tags !== undefined) patch.tags = parseTags(req.body.tags);
 
     const updated = await cosmos.updatePhoto(req.params.id, patch);
@@ -87,8 +93,8 @@ router.put('/:id', async (req, res, next) => {
   }
 });
 
-// DELETE
-router.delete('/:id', async (req, res, next) => {
+// DELETE - login required
+router.delete('/:id', requireAuth, async (req, res, next) => {
   try {
     const doc = await cosmos.getPhoto(req.params.id);
     if (!doc) return res.status(404).json({ error: 'not found' });

@@ -3,270 +3,1110 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>BagdadiPics</title>
+  <title>BagdadiPics — Cloud Photo Gallery</title>
   <style>
-    * { box-sizing: border-box; }
+    :root {
+      --bg: #fff8ec;
+      --bg-elev: #fffaf2;
+      --bg-card: rgba(255, 252, 246, 0.88);
+      --border: rgba(123, 81, 28, 0.14);
+      --border-strong: rgba(123, 81, 28, 0.28);
+      --text: #24180f;
+      --text-dim: #7d654d;
+      --accent: #c99216;
+      --accent-2: #8f173c;
+      --danger: #b4233c;
+      --success: #208a51;
+      --radius: 8px;
+      --shadow: 0 18px 48px rgba(87, 55, 21, 0.14);
+      --gold-grad: linear-gradient(115deg, #b78117 0%, #e9c45a 48%, #8f173c 100%);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      min-height: 100vh;
+    }
+
     body {
-      margin: 0;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: #f5f5f7;
-      color: #1d1d1f;
+      background:
+        linear-gradient(180deg, rgba(255, 247, 232, 0.96), rgba(255, 252, 246, 0.98) 46%, #fff),
+        radial-gradient(900px 420px at 14% 0%, rgba(233, 196, 90, 0.22), transparent 58%),
+        radial-gradient(800px 360px at 88% 4%, rgba(143, 23, 60, 0.11), transparent 54%),
+        var(--bg);
     }
+
+    /* Header */
     header {
-      background: linear-gradient(135deg, #0078d4, #00bcf2);
-      color: white;
-      padding: 24px 32px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      background: rgba(255, 248, 236, 0.82);
+      border-bottom: 1px solid rgba(123, 81, 28, 0.12);
+      box-shadow: 0 8px 24px rgba(87, 55, 21, 0.07);
     }
-    header h1 { margin: 0; font-size: 28px; }
-    header p { margin: 4px 0 0; opacity: 0.9; font-size: 14px; }
-    main { max-width: 1100px; margin: 0 auto; padding: 24px 32px; }
-    .card {
-      background: white;
-      border-radius: 12px;
-      padding: 24px;
-      margin-bottom: 24px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
-    }
-    .card h2 { margin-top: 0; }
-    label { display: block; margin: 12px 0 4px; font-weight: 500; font-size: 14px; }
-    input[type=text], textarea, input[type=file] {
-      width: 100%;
-      padding: 10px 12px;
-      border: 1px solid #d2d2d7;
-      border-radius: 8px;
-      font-size: 14px;
-      font-family: inherit;
-    }
-    textarea { min-height: 60px; resize: vertical; }
-    button {
-      background: #0078d4;
-      color: white;
-      border: 0;
-      padding: 10px 18px;
-      border-radius: 8px;
-      font-size: 14px;
-      font-weight: 500;
-      cursor: pointer;
-      margin-top: 12px;
-    }
-    button:hover { background: #106ebe; }
-    button.secondary { background: #e5e5ea; color: #1d1d1f; }
-    button.secondary:hover { background: #d1d1d6; }
-    button.danger { background: #d13438; }
-    button.danger:hover { background: #a4262c; }
-    .gallery {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    .header-inner {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 16px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
       gap: 16px;
     }
-    .photo-card {
-      background: white;
-      border-radius: 12px;
-      overflow: hidden;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .brand-mark {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      background: var(--gold-grad);
+      display: grid; place-items: center;
+      box-shadow: 0 8px 24px rgba(183, 129, 23, 0.32);
+    }
+    .brand-mark::after {
+      content: ""; width: 14px; height: 14px;
+      border-radius: 50%; background: #fff8ec;
+      box-shadow: inset 0 0 0 4px rgba(36, 24, 15, 0.82);
+    }
+    .brand-text { line-height: 1.1; }
+    .brand-title {
+      font-size: 18px; font-weight: 700; letter-spacing: -0.01em;
+      background: linear-gradient(90deg, #2b1b10, #8a5c13);
+      -webkit-background-clip: text; background-clip: text; color: transparent;
+    }
+    .brand-sub { font-size: 12px; color: var(--text-dim); margin-top: 2px; }
+    .header-actions { display: flex; align-items: center; gap: 10px; }
+    .user-chip {
+      display: flex; align-items: center; gap: 8px;
+      padding: 6px 12px;
+      background: rgba(255, 255, 255, 0.55);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      font-size: 13px;
+    }
+    .user-chip-avatar {
+      width: 22px; height: 22px;
+      border-radius: 50%;
+      background: var(--gold-grad);
+      display: grid; place-items: center;
+      font-weight: 700; font-size: 11px; color: white;
+    }
+
+    /* Hero */
+    .hero {
+      max-width: 1400px;
+      margin: 32px auto 24px;
+      padding: 88px 32px 96px;
+      min-height: 430px;
       display: flex;
-      flex-direction: column;
+      align-items: center;
+      position: relative;
+      overflow: hidden;
+      z-index: 0;
+    }
+    .hero::before {
+      content: "";
+      position: absolute;
+      inset: 0 32px;
+      border-radius: 8px;
+      background:
+        linear-gradient(90deg, rgba(26, 18, 10, 0.80) 0%, rgba(59, 35, 17, 0.60) 42%, rgba(143, 23, 60, 0.20) 100%),
+        url("https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?auto=format&fit=crop&w=1800&q=80");
+      background-size: cover;
+      background-position: center;
+      box-shadow: var(--shadow);
+      z-index: -2;
+    }
+    .hero::after {
+      content: "";
+      position: absolute;
+      left: 32px;
+      right: 32px;
+      bottom: 0;
+      height: 82px;
+      background: linear-gradient(180deg, transparent, rgba(255, 248, 236, 0.96));
+      z-index: -1;
+    }
+    .hero-content { max-width: 720px; position: relative; z-index: 1; }
+    .eyebrow {
+      color: #f5d779;
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+    .hero h1 {
+      font-size: clamp(32px, 5vw, 56px);
+      font-weight: 800; letter-spacing: -0.03em; line-height: 1.05;
+      max-width: 800px;
+      color: #fffaf2;
+      text-shadow: 0 2px 16px rgba(0, 0, 0, 0.34);
+    }
+    .hero p {
+      color: rgba(255, 250, 242, 0.86); font-size: 17px;
+      max-width: 640px; margin-top: 16px; line-height: 1.5;
+    }
+    .hero-actions {
+      display: flex;
+      gap: 12px;
+      margin-top: 26px;
+      flex-wrap: wrap;
+    }
+    .hero .btn-secondary {
+      background: rgba(255, 250, 242, 0.94);
+      color: #24180f;
+      border-color: rgba(255, 250, 242, 0.74);
+    }
+
+    /* Upload card */
+    .upload-section { max-width: 1400px; margin: 32px auto; padding: 0 32px; }
+    .upload-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      box-shadow: var(--shadow);
+    }
+    .upload-card h2 {
+      font-size: 16px; font-weight: 600; letter-spacing: -0.01em;
+      margin-bottom: 16px; display: flex; align-items: center; gap: 8px;
+    }
+    .upload-card h2::before {
+      content: "";
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--gold-grad);
+      box-shadow: 0 0 10px rgba(201, 146, 22, 0.42);
+    }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; }
+    @media (max-width: 768px) {
+      .grid-3, .grid-2 { grid-template-columns: 1fr; }
+    }
+    label {
+      display: block; font-size: 12px; color: var(--text-dim);
+      margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.06em;
+    }
+    input[type="text"], input[type="email"], input[type="password"], input[type="date"], textarea, .file-input-wrap {
+      width: 100%;
+      background: rgba(255, 255, 255, 0.72);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 10px 14px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-family: inherit;
+      transition: border-color .15s, background .15s, box-shadow .15s;
+    }
+    input[type="date"] { color-scheme: light; }
+    input:focus, textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(201, 146, 22, 0.18);
+    }
+    textarea { min-height: 44px; resize: vertical; }
+    .file-input-wrap {
+      display: flex; align-items: center; cursor: pointer;
+      color: var(--text-dim); gap: 10px; position: relative; overflow: hidden;
+    }
+    .file-input-wrap input[type=file] {
+      position: absolute; inset: 0; opacity: 0; cursor: pointer;
+    }
+    .file-input-wrap:hover { border-color: var(--border-strong); }
+    .file-input-wrap.has-file { color: var(--text); }
+    .file-input-wrap .icon { width: 18px; height: 18px; flex-shrink: 0; stroke: currentColor; }
+    .file-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+    .row-actions {
+      display: flex; align-items: center; gap: 12px;
+      margin-top: 16px; flex-wrap: wrap;
+    }
+    button {
+      font-family: inherit; font-size: 14px; font-weight: 600;
+      padding: 10px 18px; border-radius: 10px;
+      cursor: pointer; border: 1px solid transparent;
+      transition: transform .08s, background .15s, border-color .15s;
+    }
+    button:active { transform: translateY(1px); }
+    .btn-primary {
+      background: linear-gradient(135deg, #f0c85a, #c99216 55%, #9f6f0e);
+      color: #24180f;
+      border-color: rgba(255,255,255,0.1);
+      box-shadow: 0 8px 18px rgba(183, 129, 23, 0.24);
+    }
+    .btn-primary:hover { filter: brightness(1.1); }
+    .btn-secondary {
+      background: rgba(255,255,255,0.04);
+      color: var(--text);
+      border-color: var(--border);
+    }
+    .btn-secondary:hover { background: rgba(255,255,255,0.82); border-color: var(--border-strong); }
+    .btn-ghost {
+      background: transparent;
+      color: var(--text-dim);
+      border-color: var(--border);
+    }
+    .btn-ghost:hover { color: var(--text); border-color: var(--border-strong); }
+    .btn-link {
+      background: transparent; color: var(--accent);
+      border: none; padding: 4px 0; font-weight: 500; cursor: pointer;
+    }
+    .btn-link:hover { color: #8f173c; }
+    .btn-sm { padding: 6px 12px; font-size: 13px; }
+
+    @media (max-width: 640px) {
+      .header-inner {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+      .header-actions { flex-wrap: wrap; }
+      .hero {
+        margin-top: 20px;
+        padding: 64px 20px 76px;
+      }
+      .hero::before {
+        inset: 0 20px;
+        background-position: center;
+      }
+      .hero::after {
+        left: 20px;
+        right: 20px;
+      }
+      .upload-section, .gallery-section { padding: 0 20px; }
+    }
+
+    /* Login required state */
+    .login-prompt {
+      background: linear-gradient(135deg, rgba(255, 252, 246, 0.92), rgba(245, 220, 164, 0.34));
+      border: 1px solid rgba(201, 146, 22, 0.26);
+      border-radius: var(--radius);
+      padding: 32px;
+      text-align: center;
+      box-shadow: var(--shadow);
+    }
+    .login-prompt h2 { font-size: 20px; margin-bottom: 8px; }
+    .login-prompt p { color: var(--text-dim); margin-bottom: 16px; }
+    .login-prompt-actions { display: flex; gap: 8px; justify-content: center; }
+
+    /* Gallery */
+    .gallery-section { max-width: 1400px; margin: 48px auto 80px; padding: 0 32px; }
+    .gallery-header {
+      display: flex; align-items: baseline; justify-content: space-between;
+      margin-bottom: 24px; gap: 16px;
+    }
+    .gallery-header h2 { font-size: 22px; font-weight: 700; letter-spacing: -0.01em; }
+    .count { color: var(--text-dim); font-size: 13px; }
+    .masonry { column-count: 4; column-gap: 16px; }
+    @media (max-width: 1200px) { .masonry { column-count: 3; } }
+    @media (max-width: 768px)  { .masonry { column-count: 2; } }
+    @media (max-width: 480px)  { .masonry { column-count: 1; } }
+
+    .photo-card {
+      break-inside: avoid;
+      margin-bottom: 16px;
+      border-radius: var(--radius);
+      overflow: hidden;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      position: relative;
+      cursor: pointer;
+      transition: transform .25s, border-color .25s, box-shadow .25s;
+    }
+    .photo-card:hover {
+      transform: translateY(-2px);
+      border-color: var(--border-strong);
+      box-shadow: 0 12px 32px rgba(0,0,0,0.4);
     }
     .photo-card img {
+      display: block;
       width: 100%;
-      height: 180px;
-      object-fit: cover;
-      background: #e5e5ea;
+      height: auto;
+      background: #1a1a24;
     }
-    .photo-card .body { padding: 12px; flex: 1; }
-    .photo-card h3 { margin: 0 0 4px; font-size: 16px; }
-    .photo-card p { margin: 0; font-size: 13px; color: #6e6e73; }
-    .photo-card .tags { margin-top: 6px; }
-    .tag {
-      display: inline-block;
-      background: #e5f1fb;
-      color: #0078d4;
-      padding: 2px 8px;
-      border-radius: 10px;
-      font-size: 11px;
-      margin-right: 4px;
-    }
-    .photo-card .actions {
-      display: flex;
-      gap: 8px;
-      padding: 0 12px 12px;
-    }
-    .photo-card .actions button {
-      flex: 1;
-      margin: 0;
-      padding: 6px;
-      font-size: 12px;
-    }
-    .empty {
-      text-align: center;
-      padding: 48px;
-      color: #6e6e73;
-    }
-    #status {
-      padding: 8px 12px;
-      border-radius: 6px;
-      margin-top: 8px;
-      font-size: 13px;
-      display: none;
-    }
-    #status.success { background: #d4edda; color: #155724; display: block; }
-    #status.error   { background: #f8d7da; color: #721c24; display: block; }
-    /* Edit modal */
-    .modal-bg {
-      display: none;
-      position: fixed;
+    .photo-overlay {
+      position: absolute;
       inset: 0;
-      background: rgba(0,0,0,0.4);
-      align-items: center;
-      justify-content: center;
-      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 16px;
+      background: linear-gradient(180deg, transparent 50%, rgba(0,0,0,0.85) 100%);
+      opacity: 0;
+      transition: opacity .25s;
+      pointer-events: none;
+    }
+    .photo-card:hover .photo-overlay { opacity: 1; }
+    .photo-overlay h3 {
+      font-size: 16px; font-weight: 600;
+      margin-bottom: 4px; color: white;
+      text-shadow: 0 2px 6px rgba(0,0,0,0.8);
+    }
+    .photo-overlay .uploader {
+      font-size: 11px; color: rgba(255,255,255,0.7);
+      margin-top: 4px;
+    }
+    .photo-overlay .tags { margin-top: 8px; display: flex; flex-wrap: wrap; gap: 4px; }
+    .tag {
+      font-size: 10px; padding: 2px 8px; border-radius: 999px;
+      background: rgba(255,255,255,0.15);
+      backdrop-filter: blur(8px);
+      color: white; letter-spacing: 0.04em;
+    }
+    .photo-actions {
+      position: absolute; top: 12px; right: 12px;
+      display: flex; gap: 6px;
+      opacity: 0; transition: opacity .25s;
+    }
+    .photo-card:hover .photo-actions { opacity: 1; }
+    .icon-btn {
+      width: 32px; height: 32px; padding: 0;
+      border-radius: 8px; display: grid; place-items: center;
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255,255,255,0.15);
+      color: white;
+    }
+    .icon-btn:hover { background: rgba(0,0,0,0.85); }
+    .icon-btn.danger:hover {
+      background: rgba(255, 77, 109, 0.85);
+      border-color: rgba(255, 77, 109, 0.6);
+    }
+    .icon-btn svg { width: 16px; height: 16px; stroke: currentColor; }
+
+    /* Empty state */
+    .empty {
+      text-align: center; padding: 80px 24px;
+      border: 1px dashed var(--border);
+      border-radius: var(--radius); color: var(--text-dim);
+    }
+    .empty-icon {
+      width: 56px; height: 56px;
+      margin: 0 auto 16px;
+      border-radius: 50%;
+      background: rgba(201, 146, 22, 0.12);
+      display: grid; place-items: center;
+      color: var(--accent);
+    }
+    .empty h3 { color: var(--text); font-weight: 600; margin-bottom: 4px; }
+
+    /* Toast */
+    #toast {
+      position: fixed; bottom: 24px; left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      padding: 12px 20px; border-radius: 10px;
+      font-size: 14px; font-weight: 500;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(12px);
+      opacity: 0; pointer-events: none;
+      transition: opacity .25s, transform .25s;
+      z-index: 400;
+    }
+    #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    #toast.success {
+      background: rgba(46, 204, 113, 0.18);
+      color: #5cf09b;
+      border: 1px solid rgba(46, 204, 113, 0.4);
+    }
+    #toast.error {
+      background: rgba(255, 77, 109, 0.18);
+      color: #ff7a92;
+      border: 1px solid rgba(255, 77, 109, 0.4);
+    }
+
+    /* Modal */
+    .modal-bg {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(8px);
+      display: none;
+      align-items: center; justify-content: center;
+      z-index: 200;
+      animation: fadeIn .15s;
     }
     .modal-bg.show { display: flex; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     .modal {
-      background: white;
-      border-radius: 12px;
-      padding: 24px;
-      width: 90%;
-      max-width: 500px;
+      width: 90%; max-width: 420px;
+      background: var(--bg-elev);
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius);
+      padding: 28px;
+      box-shadow: var(--shadow);
+      max-height: 90vh;
+      overflow-y: auto;
     }
+    .modal h2 { font-size: 22px; margin-bottom: 4px; letter-spacing: -0.01em; }
+    .modal .modal-sub { color: var(--text-dim); font-size: 13px; margin-bottom: 20px; }
+    .modal label { margin-top: 14px; }
+    .modal label:first-of-type { margin-top: 0; }
+    .modal-actions {
+      display: flex; gap: 8px;
+      margin-top: 20px; align-items: center;
+    }
+    .modal-actions .btn-primary {
+      flex: 1; justify-content: center; display: inline-flex; align-items: center; gap: 8px;
+    }
+    .modal-toggle {
+      text-align: center; margin-top: 16px;
+      font-size: 13px; color: var(--text-dim);
+    }
+    .modal-error {
+      background: rgba(180, 35, 60, 0.10);
+      border: 1px solid rgba(180, 35, 60, 0.28);
+      color: #a21932;
+      padding: 10px 14px; border-radius: 8px;
+      font-size: 13px; margin-top: 12px;
+      display: none;
+    }
+    .modal-error.show { display: block; }
+
+    /* Lightbox - photo detail view */
+    .lightbox-bg {
+      position: fixed; inset: 0;
+      background: rgba(28, 18, 10, 0.92);
+      backdrop-filter: blur(20px);
+      display: none;
+      z-index: 250;
+      animation: fadeIn .2s;
+    }
+    .lightbox-bg.show { display: flex; flex-direction: column; }
+    .lightbox-close {
+      position: absolute; top: 20px; right: 24px;
+      width: 40px; height: 40px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.1);
+      border: 1px solid var(--border-strong);
+      color: white;
+      cursor: pointer;
+      display: grid; place-items: center;
+      z-index: 10;
+      transition: background .15s;
+    }
+    .lightbox-close:hover { background: rgba(255,255,255,0.2); }
+    .lightbox {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1fr 360px;
+      gap: 32px;
+      padding: 80px 64px 48px;
+      max-width: 1600px;
+      width: 100%;
+      margin: 0 auto;
+      align-items: center;
+    }
+    .lightbox-image {
+      display: flex; align-items: center; justify-content: center;
+      max-height: calc(100vh - 128px);
+      overflow: hidden;
+    }
+    .lightbox-image img {
+      max-width: 100%;
+      max-height: calc(100vh - 128px);
+      object-fit: contain;
+      border-radius: 8px;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.6);
+    }
+    .lightbox-info {
+      max-height: calc(100vh - 128px);
+      overflow-y: auto;
+      padding-right: 8px;
+    }
+    .lightbox-info h2 {
+      font-size: 24px; font-weight: 700;
+      letter-spacing: -0.01em;
+      margin-bottom: 8px; color: white;
+    }
+    .lightbox-info .desc {
+      color: var(--text-dim);
+      font-size: 14px;
+      line-height: 1.5;
+      margin-bottom: 24px;
+    }
+    .lightbox-info dl {
+      border-top: 1px solid var(--border);
+      padding-top: 16px;
+    }
+    .lightbox-info dt {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-dim);
+      margin-top: 14px;
+    }
+    .lightbox-info dt:first-child { margin-top: 0; }
+    .lightbox-info dd {
+      font-size: 14px;
+      color: var(--text);
+      margin-top: 4px;
+    }
+    .lightbox-info .tags-row {
+      margin-top: 16px;
+      display: flex; flex-wrap: wrap; gap: 6px;
+    }
+    .lightbox-info .tag-lg {
+      font-size: 12px; padding: 4px 12px;
+      border-radius: 999px;
+      background: rgba(201, 146, 22, 0.15);
+      color: #805711;
+      border: 1px solid rgba(201, 146, 22, 0.3);
+    }
+    @media (max-width: 900px) {
+      .lightbox {
+        grid-template-columns: 1fr;
+        padding: 60px 24px 24px;
+        gap: 16px;
+      }
+      .lightbox-image { max-height: 60vh; }
+      .lightbox-image img { max-height: 60vh; }
+      .lightbox-info { max-height: none; }
+    }
+
+    /* Loading spinner */
+    .spinner {
+      width: 16px; height: 16px;
+      border: 2px solid rgba(255,255,255,0.2);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+      display: inline-block;
+      vertical-align: middle;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    button[disabled] { opacity: 0.6; cursor: not-allowed; }
   </style>
 </head>
 <body>
+
   <header>
-    <h1>BagdadiPics</h1>
-    <p>Cloud-native photo manager — Azure Blob Storage + Cosmos DB</p>
+    <div class="header-inner">
+      <div class="brand">
+        <div class="brand-mark"></div>
+        <div class="brand-text">
+          <div class="brand-title">BagdadiPics</div>
+          <div class="brand-sub">Cloud-native photo gallery</div>
+        </div>
+      </div>
+      <div class="header-actions" id="header-actions"></div>
+    </div>
   </header>
 
-  <main>
-    <section class="card">
-      <h2>Upload a photo</h2>
-      <form id="upload-form">
-        <label>Photo file</label>
-        <input type="file" name="photo" accept="image/*" required />
+  <section class="hero">
+    <div class="hero-content">
+      <div class="eyebrow">Cloud Photo Gallery</div>
+      <h1>BagdadiPics</h1>
+      <p>Browse the public gallery in a richer golden space. When you are ready to add your own images, use the upload button to open the full upload form.</p>
+      <div class="hero-actions">
+        <button class="btn-primary" id="hero-upload">Upload photo</button>
+        <button class="btn-secondary" id="hero-gallery">View gallery</button>
+      </div>
+    </div>
+  </section>
 
-        <label>Title</label>
-        <input type="text" name="title" placeholder="e.g. Sunset over Baghdad" />
-
-        <label>Description</label>
-        <textarea name="description" placeholder="Optional"></textarea>
-
-        <label>Tags (comma-separated)</label>
-        <input type="text" name="tags" placeholder="e.g. travel, sunset" />
-
-        <button type="submit">Upload</button>
-        <div id="status"></div>
+  <!-- Upload page: opened from the upload buttons -->
+  <section class="upload-section" id="upload-section" style="display:none">
+    <div class="upload-card">
+      <h2>Add a photo</h2>
+      <form id="upload-form" autocomplete="off">
+        <div class="grid-3">
+          <div>
+            <label for="file">Photo file</label>
+            <div class="file-input-wrap" id="file-wrap">
+              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              <span class="file-name" id="file-name">Choose an image…</span>
+              <input type="file" name="photo" id="file" accept="image/*" required>
+            </div>
+          </div>
+          <div>
+            <label for="title">Title</label>
+            <input type="text" name="title" id="title" placeholder="Sunset over Baghdad" />
+          </div>
+          <div>
+            <label for="tags">Tags</label>
+            <input type="text" name="tags" id="tags" placeholder="travel, sunset, golden hour" />
+          </div>
+        </div>
+        <div class="grid-2">
+          <div>
+            <label for="photographer">Photographer</label>
+            <input type="text" name="photographer" id="photographer" placeholder="Who took this photo?" />
+          </div>
+          <div>
+            <label for="dateTaken">Date taken</label>
+            <input type="date" name="dateTaken" id="dateTaken" />
+          </div>
+        </div>
+        <div style="margin-top:12px">
+          <label for="description">Description</label>
+          <textarea name="description" id="description" placeholder="What's in this photo?"></textarea>
+        </div>
+        <div class="row-actions">
+          <button type="submit" class="btn-primary" id="upload-btn">
+            <span id="upload-btn-text">Upload to cloud</span>
+          </button>
+          <button type="reset" class="btn-ghost">Clear</button>
+          <button type="button" class="btn-secondary" id="back-to-gallery">Back to gallery</button>
+        </div>
       </form>
-    </section>
+    </div>
+  </section>
 
-    <section class="card">
-      <h2>Gallery</h2>
-      <div id="gallery" class="gallery"></div>
-      <div id="empty" class="empty" style="display:none">No photos yet — upload one above.</div>
-    </section>
-  </main>
+  <!-- Login prompt: shown on upload page when NOT authenticated -->
+  <section class="upload-section" id="login-prompt-section" style="display:none">
+    <div class="login-prompt">
+      <h2>Sign in to upload</h2>
+      <p>Anyone can browse the gallery. To add your own photos, create a free account or log in.</p>
+      <div class="login-prompt-actions">
+        <button class="btn-primary" id="prompt-signup">Create account</button>
+        <button class="btn-secondary" id="prompt-login">Sign in</button>
+        <button class="btn-ghost" id="prompt-gallery">Back to gallery</button>
+      </div>
+    </div>
+  </section>
 
-  <!-- Edit modal -->
-  <div id="edit-modal" class="modal-bg">
+  <section class="gallery-section">
+    <div class="gallery-header">
+      <h2>Public gallery</h2>
+      <span class="count" id="count"></span>
+    </div>
+    <div id="gallery" class="masonry"></div>
+    <div id="empty" class="empty" style="display:none">
+      <div class="empty-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+          <circle cx="8.5" cy="8.5" r="1.5"/>
+          <polyline points="21 15 16 10 5 21"/>
+        </svg>
+      </div>
+      <h3>No photos yet</h3>
+      <p>Sign in and upload your first one above.</p>
+    </div>
+  </section>
+
+  <!-- Toast -->
+  <div id="toast"></div>
+
+  <!-- Auth modal -->
+  <div id="auth-modal" class="modal-bg">
     <div class="modal">
-      <h2>Edit photo</h2>
-      <form id="edit-form">
-        <input type="hidden" name="id" />
-        <label>Title</label>
-        <input type="text" name="title" />
-        <label>Description</label>
-        <textarea name="description"></textarea>
-        <label>Tags (comma-separated)</label>
-        <input type="text" name="tags" />
-        <div style="display:flex; gap:8px; margin-top:16px;">
-          <button type="submit">Save</button>
-          <button type="button" class="secondary" id="cancel-edit">Cancel</button>
+      <h2 id="auth-title">Sign in</h2>
+      <div class="modal-sub" id="auth-sub">Welcome back to BagdadiPics.</div>
+      <form id="auth-form" autocomplete="on">
+        <label>Email</label>
+        <input type="email" name="email" required autocomplete="email" placeholder="you@example.com" />
+        <label>Password</label>
+        <input type="password" name="password" required autocomplete="current-password" minlength="8" placeholder="••••••••" />
+        <div class="modal-error" id="auth-error"></div>
+        <div class="modal-actions">
+          <button type="submit" class="btn-primary" id="auth-submit">
+            <span id="auth-submit-text">Sign in</span>
+          </button>
+          <button type="button" class="btn-ghost" id="auth-cancel">Cancel</button>
+        </div>
+        <div class="modal-toggle">
+          <span id="auth-toggle-text">Don't have an account?</span>
+          <button type="button" class="btn-link" id="auth-toggle">Create one</button>
         </div>
       </form>
     </div>
   </div>
 
+  <!-- Edit modal -->
+  <div id="edit-modal" class="modal-bg">
+    <div class="modal">
+      <h2>Edit photo</h2>
+      <form id="edit-form" autocomplete="off">
+        <input type="hidden" name="id" />
+        <label>Title</label>
+        <input type="text" name="title" />
+        <label>Description</label>
+        <textarea name="description"></textarea>
+        <label>Photographer</label>
+        <input type="text" name="photographer" />
+        <label>Date taken</label>
+        <input type="date" name="dateTaken" />
+        <label>Tags (comma-separated)</label>
+        <input type="text" name="tags" />
+        <div class="modal-actions">
+          <button type="submit" class="btn-primary">Save changes</button>
+          <button type="button" class="btn-ghost" id="cancel-edit">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Lightbox - photo detail view -->
+  <div id="lightbox" class="lightbox-bg">
+    <button class="lightbox-close" id="lightbox-close" aria-label="Close">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="18" y1="6" x2="6" y2="18"/>
+        <line x1="6" y1="6" x2="18" y2="18"/>
+      </svg>
+    </button>
+    <div class="lightbox">
+      <div class="lightbox-image">
+        <img id="lightbox-img" src="" alt="" />
+      </div>
+      <aside class="lightbox-info" id="lightbox-info"></aside>
+    </div>
+  </div>
+
   <script>
     const $ = (sel) => document.querySelector(sel);
-    const status = $('#status');
+    const TOKEN_KEY = 'bagdadipics_token';
+    const USER_KEY = 'bagdadipics_user';
 
-    function showStatus(msg, ok = true) {
-      status.textContent = msg;
-      status.className = ok ? 'success' : 'error';
-      setTimeout(() => { status.style.display = 'none'; }, 4000);
+    // ---------- Auth state ----------
+    function getToken() { return localStorage.getItem(TOKEN_KEY); }
+    function getUser() {
+      const raw = localStorage.getItem(USER_KEY);
+      return raw ? JSON.parse(raw) : null;
+    }
+    function setSession(token, user) {
+      localStorage.setItem(TOKEN_KEY, token);
+      localStorage.setItem(USER_KEY, JSON.stringify(user));
+      renderHeader();
+      renderUploadSection();
+      loadPhotos();
+    }
+    function clearSession() {
+      localStorage.removeItem(TOKEN_KEY);
+      localStorage.removeItem(USER_KEY);
+      renderHeader();
+      renderUploadSection();
+      loadPhotos();
+    }
+    function authHeaders() {
+      const token = getToken();
+      return token ? { Authorization: 'Bearer ' + token } : {};
     }
 
-    async function loadPhotos() {
-      const res = await fetch('/api/photos');
-      const photos = await res.json();
-      const gallery = $('#gallery');
-      const empty = $('#empty');
-      gallery.innerHTML = '';
-      if (photos.length === 0) { empty.style.display = 'block'; return; }
-      empty.style.display = 'none';
-      for (const p of photos) {
-        const card = document.createElement('div');
-        card.className = 'photo-card';
-        card.innerHTML = `
-          <img src="${p.blobUrl}" alt="${escapeHtml(p.title)}" />
-          <div class="body">
-            <h3>${escapeHtml(p.title)}</h3>
-            <p>${escapeHtml(p.description || '')}</p>
-            <div class="tags">${(p.tags || []).map(t => `<span class="tag">${escapeHtml(t)}</span>`).join('')}</div>
-          </div>
-          <div class="actions">
-            <button class="secondary" data-action="edit" data-id="${p.id}">Edit</button>
-            <button class="danger" data-action="delete" data-id="${p.id}">Delete</button>
-          </div>
-        `;
-        gallery.appendChild(card);
-      }
+    function isUploadRoute() {
+      return window.location.hash === '#upload';
+    }
+
+    function goUpload() {
+      window.location.hash = 'upload';
+      renderUploadSection();
+      setTimeout(() => {
+        const target = getUser() ? $('#upload-section') : $('#login-prompt-section');
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 0);
+    }
+
+    function goGallery() {
+      history.pushState('', document.title, window.location.pathname + window.location.search);
+      renderUploadSection();
+      setTimeout(() => $('.gallery-section').scrollIntoView({ behavior: 'smooth', block: 'start' }), 0);
+    }
+
+    // ---------- Helpers ----------
+    const toast = $('#toast');
+    let toastTimer;
+    function showToast(msg, ok = true) {
+      toast.textContent = msg;
+      toast.className = ok ? 'show success' : 'show error';
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => { toast.className = ''; }, 3500);
     }
 
     function escapeHtml(s) {
-      return String(s).replace(/[&<>"']/g, (c) => ({
-        '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;',
+      return String(s).replace(/[&<>"']/g, c => ({
+        '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
       }[c]));
     }
 
-    // Upload
-    $('#upload-form').addEventListener('submit', async (e) => {
+    function initials(email) {
+      if (!email) return '?';
+      return email[0].toUpperCase();
+    }
+
+    function formatDate(iso) {
+      if (!iso) return '';
+      try {
+        const d = new Date(iso);
+        if (isNaN(d.getTime())) return iso;
+        return d.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
+      } catch (_) { return iso; }
+    }
+
+    function formatRelativeOrAbsolute(iso) {
+      if (!iso) return '';
+      const d = new Date(iso);
+      if (isNaN(d.getTime())) return iso;
+      const diffMs = Date.now() - d.getTime();
+      const diffMin = Math.floor(diffMs / 60000);
+      if (diffMin < 1) return 'just now';
+      if (diffMin < 60) return diffMin + ' min ago';
+      const diffHr = Math.floor(diffMin / 60);
+      if (diffHr < 24) return diffHr + ' hour' + (diffHr === 1 ? '' : 's') + ' ago';
+      const diffDay = Math.floor(diffHr / 24);
+      if (diffDay < 7) return diffDay + ' day' + (diffDay === 1 ? '' : 's') + ' ago';
+      return formatDate(iso);
+    }
+
+    // ---------- Header ----------
+    function renderHeader() {
+      const el = $('#header-actions');
+      const user = getUser();
+      if (user) {
+        el.innerHTML = `
+          <div class="user-chip">
+            <div class="user-chip-avatar">${escapeHtml(initials(user.email))}</div>
+            <span>${escapeHtml(user.email)}</span>
+          </div>
+          <button class="btn-primary btn-sm" id="header-upload">Upload</button>
+          <button class="btn-ghost btn-sm" id="logout-btn">Logout</button>
+        `;
+        $('#header-upload').addEventListener('click', goUpload);
+        $('#logout-btn').addEventListener('click', () => {
+          clearSession();
+          showToast('Logged out.');
+        });
+      } else {
+        el.innerHTML = `
+          <button class="btn-primary btn-sm" id="header-upload">Upload</button>
+          <button class="btn-ghost btn-sm" id="header-login">Sign in</button>
+          <button class="btn-secondary btn-sm" id="header-signup">Sign up</button>
+        `;
+        $('#header-upload').addEventListener('click', goUpload);
+        $('#header-login').addEventListener('click', () => openAuthModal('login'));
+        $('#header-signup').addEventListener('click', () => openAuthModal('signup'));
+      }
+    }
+
+    function renderUploadSection() {
+      const isLoggedIn = !!getUser();
+      const showUploadPage = isUploadRoute();
+      $('#upload-section').style.display = showUploadPage && isLoggedIn ? 'block' : 'none';
+      $('#login-prompt-section').style.display = showUploadPage && !isLoggedIn ? 'block' : 'none';
+    }
+
+    // ---------- Auth modal ----------
+    let authMode = 'login';
+    function openAuthModal(mode) {
+      authMode = mode;
+      const isSignup = mode === 'signup';
+      $('#auth-title').textContent = isSignup ? 'Create account' : 'Sign in';
+      $('#auth-sub').textContent = isSignup ? 'Join BagdadiPics to upload your photos.' : 'Welcome back to BagdadiPics.';
+      $('#auth-submit-text').textContent = isSignup ? 'Create account' : 'Sign in';
+      $('#auth-toggle-text').textContent = isSignup ? 'Already have an account?' : "Don't have an account?";
+      $('#auth-toggle').textContent = isSignup ? 'Sign in' : 'Create one';
+      const pwInput = document.querySelector('#auth-form [name=password]');
+      pwInput.autocomplete = isSignup ? 'new-password' : 'current-password';
+      $('#auth-error').classList.remove('show');
+      $('#auth-error').textContent = '';
+      $('#auth-form').reset();
+      $('#auth-modal').classList.add('show');
+      setTimeout(() => document.querySelector('#auth-form [name=email]').focus(), 50);
+    }
+
+    $('#auth-cancel').addEventListener('click', () => $('#auth-modal').classList.remove('show'));
+    $('#auth-modal').addEventListener('click', (e) => {
+      if (e.target.id === 'auth-modal') $('#auth-modal').classList.remove('show');
+    });
+    $('#auth-toggle').addEventListener('click', () => openAuthModal(authMode === 'login' ? 'signup' : 'login'));
+    $('#prompt-signup').addEventListener('click', () => openAuthModal('signup'));
+    $('#prompt-login').addEventListener('click', () => openAuthModal('login'));
+    $('#prompt-gallery').addEventListener('click', goGallery);
+    $('#hero-upload').addEventListener('click', goUpload);
+    $('#hero-gallery').addEventListener('click', goGallery);
+    $('#back-to-gallery').addEventListener('click', goGallery);
+    window.addEventListener('hashchange', renderUploadSection);
+
+    $('#auth-form').addEventListener('submit', async (e) => {
       e.preventDefault();
       const fd = new FormData(e.target);
-      const res = await fetch('/api/photos', { method: 'POST', body: fd });
-      if (res.ok) {
-        showStatus('Photo uploaded.');
-        e.target.reset();
-        loadPhotos();
+      const body = { email: fd.get('email'), password: fd.get('password') };
+      const url = authMode === 'signup' ? '/api/auth/signup' : '/api/auth/login';
+      const submitBtn = $('#auth-submit');
+      const submitText = $('#auth-submit-text');
+      const errEl = $('#auth-error');
+      errEl.classList.remove('show');
+      submitBtn.disabled = true;
+      submitText.innerHTML = '<span class="spinner"></span> Working…';
+      try {
+        const res = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.error || `${authMode} failed`);
+        setSession(data.token, data.user);
+        $('#auth-modal').classList.remove('show');
+        showToast(authMode === 'signup' ? 'Account created.' : 'Welcome back.');
+      } catch (err) {
+        errEl.textContent = err.message;
+        errEl.classList.add('show');
+      } finally {
+        submitBtn.disabled = false;
+        submitText.textContent = authMode === 'signup' ? 'Create account' : 'Sign in';
+      }
+    });
+
+    // ---------- Gallery ----------
+    let allPhotos = [];
+
+    async function loadPhotos() {
+      try {
+        const res = await fetch('/api/photos');
+        if (!res.ok) throw new Error('Failed to load gallery');
+        const photos = await res.json();
+        allPhotos = photos;
+        const gallery = $('#gallery');
+        const empty = $('#empty');
+        const count = $('#count');
+        const isLoggedIn = !!getUser();
+
+        gallery.innerHTML = '';
+        if (photos.length === 0) {
+          empty.style.display = 'block';
+          count.textContent = '';
+          return;
+        }
+        empty.style.display = 'none';
+        count.textContent = `${photos.length} photo${photos.length === 1 ? '' : 's'}`;
+
+        for (const p of photos) {
+          const card = document.createElement('div');
+          card.className = 'photo-card';
+          card.dataset.id = p.id;
+          const tagsHtml = (p.tags || []).map(t => `<span class="tag">${escapeHtml(t)}</span>`).join('');
+          const uploaderHtml = p.uploadedBy ? `<div class="uploader">by ${escapeHtml(p.uploadedBy)}</div>` : '';
+          const actionsHtml = isLoggedIn ? `
+            <div class="photo-actions">
+              <button class="icon-btn" data-action="edit" data-id="${p.id}" title="Edit">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                </svg>
+              </button>
+              <button class="icon-btn danger" data-action="delete" data-id="${p.id}" title="Delete">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="3 6 5 6 21 6"/>
+                  <path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6"/>
+                  <path d="M10 11v6M14 11v6"/>
+                  <path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/>
+                </svg>
+              </button>
+            </div>
+          ` : '';
+          card.innerHTML = `
+            <img src="${p.blobUrl}" alt="${escapeHtml(p.title || 'Photo')}" loading="lazy">
+            <div class="photo-overlay">
+              <h3>${escapeHtml(p.title || 'Untitled')}</h3>
+              ${uploaderHtml}
+              ${tagsHtml ? `<div class="tags">${tagsHtml}</div>` : ''}
+            </div>
+            ${actionsHtml}
+          `;
+          gallery.appendChild(card);
+        }
+      } catch (err) {
+        showToast(err.message || 'Failed to load photos', false);
+      }
+    }
+
+    // ---------- File input UI ----------
+    const fileInput = $('#file');
+    const fileName = $('#file-name');
+    const fileWrap = $('#file-wrap');
+    fileInput.addEventListener('change', () => {
+      if (fileInput.files && fileInput.files[0]) {
+        fileName.textContent = fileInput.files[0].name;
+        fileWrap.classList.add('has-file');
       } else {
-        const err = await res.json().catch(() => ({}));
-        showStatus('Upload failed: ' + (err.error || res.status), false);
+        fileName.textContent = 'Choose an image…';
+        fileWrap.classList.remove('has-file');
+      }
+    });
+    $('#upload-form').addEventListener('reset', () => {
+      setTimeout(() => {
+        fileName.textContent = 'Choose an image…';
+        fileWrap.classList.remove('has-file');
+      }, 0);
+    });
+
+    // ---------- Upload ----------
+    $('#upload-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = $('#upload-btn');
+      const btnText = $('#upload-btn-text');
+      btn.disabled = true;
+      btnText.innerHTML = '<span class="spinner"></span> Uploading…';
+      try {
+        const fd = new FormData(e.target);
+        const res = await fetch('/api/photos', {
+          method: 'POST',
+          headers: authHeaders(),
+          body: fd,
+        });
+        if (res.status === 401) { clearSession(); throw new Error('Session expired. Please sign in again.'); }
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.error || `Upload failed (${res.status})`);
+        }
+        showToast('Photo uploaded.');
+        e.target.reset();
+        fileName.textContent = 'Choose an image…';
+        fileWrap.classList.remove('has-file');
+        loadPhotos();
+      } catch (err) {
+        showToast(err.message, false);
+      } finally {
+        btn.disabled = false;
+        btnText.textContent = 'Upload to cloud';
       }
     });
 
-    // Gallery click handlers (edit / delete)
+    // ---------- Gallery clicks: open lightbox or trigger action ----------
     $('#gallery').addEventListener('click', async (e) => {
-      const btn = e.target.closest('button[data-action]');
-      if (!btn) return;
-      const id = btn.dataset.id;
-      if (btn.dataset.action === 'delete') {
-        if (!confirm('Delete this photo?')) return;
-        const res = await fetch('/api/photos/' + id, { method: 'DELETE' });
-        if (res.ok) { showStatus('Deleted.'); loadPhotos(); }
-        else showStatus('Delete failed.', false);
-      } else if (btn.dataset.action === 'edit') {
-        const res = await fetch('/api/photos/' + id);
-        const p = await res.json();
-        $('#edit-form [name=id]').value = p.id;
-        $('#edit-form [name=title]').value = p.title || '';
-        $('#edit-form [name=description]').value = p.description || '';
-        $('#edit-form [name=tags]').value = (p.tags || []).join(', ');
-        $('#edit-modal').classList.add('show');
+      const actionBtn = e.target.closest('button[data-action]');
+      if (actionBtn) {
+        const id = actionBtn.dataset.id;
+        if (actionBtn.dataset.action === 'delete') {
+          if (!confirm('Delete this photo?')) return;
+          const res = await fetch('/api/photos/' + id, {
+            method: 'DELETE',
+            headers: authHeaders(),
+          });
+          if (res.status === 401) { clearSession(); showToast('Please sign in again.', false); return; }
+          if (res.ok) { showToast('Photo deleted.'); loadPhotos(); }
+          else showToast('Delete failed.', false);
+        } else if (actionBtn.dataset.action === 'edit') {
+          const res = await fetch('/api/photos/' + id);
+          const p = await res.json();
+          $('#edit-form [name=id]').value = p.id;
+          $('#edit-form [name=title]').value = p.title || '';
+          $('#edit-form [name=description]').value = p.description || '';
+          $('#edit-form [name=photographer]').value = p.photographer || '';
+          $('#edit-form [name=dateTaken]').value = p.dateTaken ? p.dateTaken.slice(0, 10) : '';
+          $('#edit-form [name=tags]').value = (p.tags || []).join(', ');
+          $('#edit-modal').classList.add('show');
+        }
+        return;
+      }
+
+      // Otherwise: clicked the photo itself - open lightbox
+      const card = e.target.closest('.photo-card');
+      if (card) {
+        const id = card.dataset.id;
+        const photo = allPhotos.find(p => p.id === id);
+        if (photo) openLightbox(photo);
       }
     });
 
-    // Edit modal
+    // ---------- Edit modal ----------
     $('#cancel-edit').addEventListener('click', () => $('#edit-modal').classList.remove('show'));
+    $('#edit-modal').addEventListener('click', (e) => {
+      if (e.target.id === 'edit-modal') $('#edit-modal').classList.remove('show');
+    });
     $('#edit-form').addEventListener('submit', async (e) => {
       e.preventDefault();
       const fd = new FormData(e.target);
@@ -274,23 +1114,80 @@
       const body = {
         title: fd.get('title'),
         description: fd.get('description'),
+        photographer: fd.get('photographer'),
+        dateTaken: fd.get('dateTaken'),
         tags: fd.get('tags'),
       };
       const res = await fetch('/api/photos/' + id, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...authHeaders() },
         body: JSON.stringify(body),
       });
+      if (res.status === 401) { clearSession(); showToast('Please sign in again.', false); return; }
       if (res.ok) {
         $('#edit-modal').classList.remove('show');
-        showStatus('Updated.');
+        showToast('Photo updated.');
         loadPhotos();
       } else {
-        showStatus('Update failed.', false);
+        showToast('Update failed.', false);
       }
     });
 
+    // ---------- Lightbox ----------
+    function openLightbox(p) {
+      $('#lightbox-img').src = p.blobUrl;
+      $('#lightbox-img').alt = p.title || 'Photo';
+
+      const fields = [];
+      if (p.photographer) fields.push({ label: 'Photographer', value: escapeHtml(p.photographer) });
+      if (p.dateTaken) fields.push({ label: 'Date taken', value: escapeHtml(formatDate(p.dateTaken)) });
+      if (p.uploadedBy) fields.push({ label: 'Uploaded by', value: escapeHtml(p.uploadedBy) });
+      if (p.createdAt) fields.push({ label: 'Uploaded', value: escapeHtml(formatRelativeOrAbsolute(p.createdAt)) });
+      if (p.contentType) fields.push({ label: 'File type', value: escapeHtml(p.contentType) });
+      if (p.sizeBytes) fields.push({ label: 'Size', value: escapeHtml((p.sizeBytes / 1024).toFixed(1) + ' KB') });
+
+      const dl = fields.map(f => `<dt>${f.label}</dt><dd>${f.value}</dd>`).join('');
+      const tagsHtml = (p.tags || []).length
+        ? `<div class="tags-row">${p.tags.map(t => `<span class="tag-lg">${escapeHtml(t)}</span>`).join('')}</div>`
+        : '';
+
+      $('#lightbox-info').innerHTML = `
+        <h2>${escapeHtml(p.title || 'Untitled')}</h2>
+        ${p.description ? `<p class="desc">${escapeHtml(p.description)}</p>` : ''}
+        ${dl ? `<dl>${dl}</dl>` : ''}
+        ${tagsHtml}
+      `;
+
+      $('#lightbox').classList.add('show');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeLightbox() {
+      $('#lightbox').classList.remove('show');
+      document.body.style.overflow = '';
+    }
+
+    $('#lightbox-close').addEventListener('click', closeLightbox);
+    $('#lightbox').addEventListener('click', (e) => {
+      // Close if backdrop clicked (not the image or the info panel)
+      if (e.target.id === 'lightbox' || e.target.classList.contains('lightbox')) closeLightbox();
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        if ($('#lightbox').classList.contains('show')) closeLightbox();
+      }
+    });
+
+    // ---------- Init ----------
+    renderHeader();
+    renderUploadSection();
     loadPhotos();
+
+    if (getToken()) {
+      fetch('/api/auth/me', { headers: authHeaders() })
+        .then(res => { if (!res.ok && res.status === 401) clearSession(); })
+        .catch(() => {});
+    }
   </script>
 </body>
 </html>
