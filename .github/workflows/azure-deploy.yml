@@ -1,0 +1,42 @@
+# CI/CD pipeline: builds the app and deploys to Azure App Service on push to main.
+# Required GitHub secret:
+#   AZURE_WEBAPP_PUBLISH_PROFILE  - downloaded from your App Service in the Azure Portal
+# Required GitHub variable (or edit the value below):
+#   AZURE_WEBAPP_NAME             - the name of your App Service (e.g. bagdadipics-app)
+
+name: Build and deploy to Azure App Service
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  AZURE_WEBAPP_NAME: bagdadipics # <- change this to your App Service name
+  NODE_VERSION: "18.x"
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci --omit=dev || npm install --omit=dev
+
+      - name: Zip artifact for deployment
+        run: zip -r release.zip . -x "node_modules/.cache/*" ".git/*" ".github/*"
+
+      - name: Deploy to Azure Web App
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ env.AZURE_WEBAPP_NAME }}
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          package: release.zip

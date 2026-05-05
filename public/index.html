@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BagdadiPics</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f5f5f7;
+      color: #1d1d1f;
+    }
+    header {
+      background: linear-gradient(135deg, #0078d4, #00bcf2);
+      color: white;
+      padding: 24px 32px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    header h1 { margin: 0; font-size: 28px; }
+    header p { margin: 4px 0 0; opacity: 0.9; font-size: 14px; }
+    main { max-width: 1100px; margin: 0 auto; padding: 24px 32px; }
+    .card {
+      background: white;
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    }
+    .card h2 { margin-top: 0; }
+    label { display: block; margin: 12px 0 4px; font-weight: 500; font-size: 14px; }
+    input[type=text], textarea, input[type=file] {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #d2d2d7;
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: inherit;
+    }
+    textarea { min-height: 60px; resize: vertical; }
+    button {
+      background: #0078d4;
+      color: white;
+      border: 0;
+      padding: 10px 18px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      margin-top: 12px;
+    }
+    button:hover { background: #106ebe; }
+    button.secondary { background: #e5e5ea; color: #1d1d1f; }
+    button.secondary:hover { background: #d1d1d6; }
+    button.danger { background: #d13438; }
+    button.danger:hover { background: #a4262c; }
+    .gallery {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 16px;
+    }
+    .photo-card {
+      background: white;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+      display: flex;
+      flex-direction: column;
+    }
+    .photo-card img {
+      width: 100%;
+      height: 180px;
+      object-fit: cover;
+      background: #e5e5ea;
+    }
+    .photo-card .body { padding: 12px; flex: 1; }
+    .photo-card h3 { margin: 0 0 4px; font-size: 16px; }
+    .photo-card p { margin: 0; font-size: 13px; color: #6e6e73; }
+    .photo-card .tags { margin-top: 6px; }
+    .tag {
+      display: inline-block;
+      background: #e5f1fb;
+      color: #0078d4;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-size: 11px;
+      margin-right: 4px;
+    }
+    .photo-card .actions {
+      display: flex;
+      gap: 8px;
+      padding: 0 12px 12px;
+    }
+    .photo-card .actions button {
+      flex: 1;
+      margin: 0;
+      padding: 6px;
+      font-size: 12px;
+    }
+    .empty {
+      text-align: center;
+      padding: 48px;
+      color: #6e6e73;
+    }
+    #status {
+      padding: 8px 12px;
+      border-radius: 6px;
+      margin-top: 8px;
+      font-size: 13px;
+      display: none;
+    }
+    #status.success { background: #d4edda; color: #155724; display: block; }
+    #status.error   { background: #f8d7da; color: #721c24; display: block; }
+    /* Edit modal */
+    .modal-bg {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.4);
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+    }
+    .modal-bg.show { display: flex; }
+    .modal {
+      background: white;
+      border-radius: 12px;
+      padding: 24px;
+      width: 90%;
+      max-width: 500px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>BagdadiPics</h1>
+    <p>Cloud-native photo manager — Azure Blob Storage + Cosmos DB</p>
+  </header>
+
+  <main>
+    <section class="card">
+      <h2>Upload a photo</h2>
+      <form id="upload-form">
+        <label>Photo file</label>
+        <input type="file" name="photo" accept="image/*" required />
+
+        <label>Title</label>
+        <input type="text" name="title" placeholder="e.g. Sunset over Baghdad" />
+
+        <label>Description</label>
+        <textarea name="description" placeholder="Optional"></textarea>
+
+        <label>Tags (comma-separated)</label>
+        <input type="text" name="tags" placeholder="e.g. travel, sunset" />
+
+        <button type="submit">Upload</button>
+        <div id="status"></div>
+      </form>
+    </section>
+
+    <section class="card">
+      <h2>Gallery</h2>
+      <div id="gallery" class="gallery"></div>
+      <div id="empty" class="empty" style="display:none">No photos yet — upload one above.</div>
+    </section>
+  </main>
+
+  <!-- Edit modal -->
+  <div id="edit-modal" class="modal-bg">
+    <div class="modal">
+      <h2>Edit photo</h2>
+      <form id="edit-form">
+        <input type="hidden" name="id" />
+        <label>Title</label>
+        <input type="text" name="title" />
+        <label>Description</label>
+        <textarea name="description"></textarea>
+        <label>Tags (comma-separated)</label>
+        <input type="text" name="tags" />
+        <div style="display:flex; gap:8px; margin-top:16px;">
+          <button type="submit">Save</button>
+          <button type="button" class="secondary" id="cancel-edit">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const $ = (sel) => document.querySelector(sel);
+    const status = $('#status');
+
+    function showStatus(msg, ok = true) {
+      status.textContent = msg;
+      status.className = ok ? 'success' : 'error';
+      setTimeout(() => { status.style.display = 'none'; }, 4000);
+    }
+
+    async function loadPhotos() {
+      const res = await fetch('/api/photos');
+      const photos = await res.json();
+      const gallery = $('#gallery');
+      const empty = $('#empty');
+      gallery.innerHTML = '';
+      if (photos.length === 0) { empty.style.display = 'block'; return; }
+      empty.style.display = 'none';
+      for (const p of photos) {
+        const card = document.createElement('div');
+        card.className = 'photo-card';
+        card.innerHTML = `
+          <img src="${p.blobUrl}" alt="${escapeHtml(p.title)}" />
+          <div class="body">
+            <h3>${escapeHtml(p.title)}</h3>
+            <p>${escapeHtml(p.description || '')}</p>
+            <div class="tags">${(p.tags || []).map(t => `<span class="tag">${escapeHtml(t)}</span>`).join('')}</div>
+          </div>
+          <div class="actions">
+            <button class="secondary" data-action="edit" data-id="${p.id}">Edit</button>
+            <button class="danger" data-action="delete" data-id="${p.id}">Delete</button>
+          </div>
+        `;
+        gallery.appendChild(card);
+      }
+    }
+
+    function escapeHtml(s) {
+      return String(s).replace(/[&<>"']/g, (c) => ({
+        '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;',
+      }[c]));
+    }
+
+    // Upload
+    $('#upload-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const fd = new FormData(e.target);
+      const res = await fetch('/api/photos', { method: 'POST', body: fd });
+      if (res.ok) {
+        showStatus('Photo uploaded.');
+        e.target.reset();
+        loadPhotos();
+      } else {
+        const err = await res.json().catch(() => ({}));
+        showStatus('Upload failed: ' + (err.error || res.status), false);
+      }
+    });
+
+    // Gallery click handlers (edit / delete)
+    $('#gallery').addEventListener('click', async (e) => {
+      const btn = e.target.closest('button[data-action]');
+      if (!btn) return;
+      const id = btn.dataset.id;
+      if (btn.dataset.action === 'delete') {
+        if (!confirm('Delete this photo?')) return;
+        const res = await fetch('/api/photos/' + id, { method: 'DELETE' });
+        if (res.ok) { showStatus('Deleted.'); loadPhotos(); }
+        else showStatus('Delete failed.', false);
+      } else if (btn.dataset.action === 'edit') {
+        const res = await fetch('/api/photos/' + id);
+        const p = await res.json();
+        $('#edit-form [name=id]').value = p.id;
+        $('#edit-form [name=title]').value = p.title || '';
+        $('#edit-form [name=description]').value = p.description || '';
+        $('#edit-form [name=tags]').value = (p.tags || []).join(', ');
+        $('#edit-modal').classList.add('show');
+      }
+    });
+
+    // Edit modal
+    $('#cancel-edit').addEventListener('click', () => $('#edit-modal').classList.remove('show'));
+    $('#edit-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const fd = new FormData(e.target);
+      const id = fd.get('id');
+      const body = {
+        title: fd.get('title'),
+        description: fd.get('description'),
+        tags: fd.get('tags'),
+      };
+      const res = await fetch('/api/photos/' + id, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      if (res.ok) {
+        $('#edit-modal').classList.remove('show');
+        showStatus('Updated.');
+        loadPhotos();
+      } else {
+        showStatus('Update failed.', false);
+      }
+    });
+
+    loadPhotos();
+  </script>
+</body>
+</html>
