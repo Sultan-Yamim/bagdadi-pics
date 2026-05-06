@@ -75,9 +75,15 @@ router.get('/:id', async (req, res, next) => {
   }
 });
 
-// UPDATE - login required
+// UPDATE - login required, owner only
 router.put('/:id', requireAuth, async (req, res, next) => {
   try {
+    const existing = await cosmos.getPhoto(req.params.id);
+    if (!existing) return res.status(404).json({ error: 'not found' });
+    if (existing.uploadedBy !== req.user.email) {
+      return res.status(403).json({ error: 'You can only edit photos you uploaded' });
+    }
+
     const patch = {};
     if (typeof req.body.title === 'string') patch.title = req.body.title;
     if (typeof req.body.description === 'string') patch.description = req.body.description;
@@ -87,18 +93,20 @@ router.put('/:id', requireAuth, async (req, res, next) => {
     if (req.body.tags !== undefined) patch.tags = parseTags(req.body.tags);
 
     const updated = await cosmos.updatePhoto(req.params.id, patch);
-    if (!updated) return res.status(404).json({ error: 'not found' });
     res.json(updated);
   } catch (err) {
     next(err);
   }
 });
 
-// DELETE - login required
+// DELETE - login required, owner only
 router.delete('/:id', requireAuth, async (req, res, next) => {
   try {
     const doc = await cosmos.getPhoto(req.params.id);
     if (!doc) return res.status(404).json({ error: 'not found' });
+    if (doc.uploadedBy !== req.user.email) {
+      return res.status(403).json({ error: 'You can only delete photos you uploaded' });
+    }
     await blob.deletePhoto(doc.blobName);
     await cosmos.deletePhoto(req.params.id);
     res.status(204).end();

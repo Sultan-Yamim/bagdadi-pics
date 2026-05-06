@@ -1298,7 +1298,7 @@
         card.dataset.id = p.id;
         const tagsHtml = (p.tags || []).map(t => `<span class="tag">${escapeHtml(t)}</span>`).join('');
         const uploaderHtml = p.uploadedBy ? `<div class="uploader">by ${escapeHtml(p.uploadedBy)}</div>` : '';
-        const actionsHtml = isLoggedIn ? `
+        const actionsHtml = (getUser() && getUser().email === p.uploadedBy) ? `
           <div class="photo-actions">
             <button class="icon-btn" data-action="edit" data-id="${p.id}" title="Edit">
               <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
