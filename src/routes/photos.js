@@ -2,7 +2,7 @@
 //   POST   /api/photos          - upload a photo file + metadata  (auth required)
 //   GET    /api/photos          - list all photos
 //   GET    /api/photos/:id      - read one photo's metadata
-//   PUT    /api/photos/:id      - update title/description/tags   (auth required)
+//   PUT    /api/photos/:id      - update title/description/etc    (auth required)
 //   DELETE /api/photos/:id      - delete blob and metadata doc    (auth required)
 
 const express = require('express');
@@ -15,7 +15,6 @@ const { requireAuth } = require('../middleware/auth');
 
 const router = express.Router();
 
-// In-memory upload (good up to ~10MB; tweak the limit for larger photos)
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: 15 * 1024 * 1024 },
@@ -40,6 +39,7 @@ router.post('/', requireAuth, upload.single('photo'), async (req, res, next) => 
       tags,
       photographer: req.body.photographer || '',
       dateTaken: req.body.dateTaken || null,
+      location: req.body.location || '',
       blobName,
       blobUrl: url,
       contentType: req.file.mimetype,
@@ -82,6 +82,7 @@ router.put('/:id', requireAuth, async (req, res, next) => {
     if (typeof req.body.title === 'string') patch.title = req.body.title;
     if (typeof req.body.description === 'string') patch.description = req.body.description;
     if (typeof req.body.photographer === 'string') patch.photographer = req.body.photographer;
+    if (typeof req.body.location === 'string') patch.location = req.body.location;
     if (typeof req.body.dateTaken === 'string') patch.dateTaken = req.body.dateTaken || null;
     if (req.body.tags !== undefined) patch.tags = parseTags(req.body.tags);
 
